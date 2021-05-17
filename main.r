@@ -1,7 +1,7 @@
 library(tidyverse)
 library(lubridate)
 library(wesanderson)
-setwd("C:/Users/zgold/Downloads")
+setwd("example/path") #ADD POKERNOW DIRECTORY HERE
 pokernow <- read.csv("pokernowlog.csv") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
