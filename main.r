@@ -2,7 +2,7 @@ library(tidyverse)
 library(lubridate)
 library(wesanderson)
 setwd("C:/Users/zgold/Downloads")
-pokernow <- read.csv("insertpokernowloghere.csv")
+pokernow <- read.csv("pokernowlog.csv") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
 
@@ -23,7 +23,7 @@ grepleachin <- function(x, y){
   return_str
 }
 
-#Got this function from stack overflow, helps me account for busts later on. 
+#Helper function to account for busts later on. 
 insertRow <- function(existingDF, newrow, r) {
   existingDF[seq(r+1,nrow(existingDF)+1),] <- existingDF[seq(r,nrow(existingDF)),]
   existingDF[r,] <- newrow
