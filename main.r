@@ -2,7 +2,7 @@ library(tidyverse)
 library(lubridate)
 library(wesanderson)
 setwd("C:/Users/zgold/Downloads")
-pokernow <- read.csv("poker_now_log_SlL0UTo98lPul-E-N7uG7z0SW.csv")
+pokernow <- read.csv("insertpokernowloghere.csv")
 entries <- pokernow$entry
 entry_stack <- c()
 
