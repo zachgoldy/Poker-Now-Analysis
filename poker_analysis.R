@@ -1,8 +1,9 @@
 library(tidyverse)
 library(lubridate)
 library(wesanderson)
-setwd("example/path") #ADD POKERNOW DIRECTORY HERE
-pokernow <- read.csv("pokernowlog.csv") #INSERT POKER NOW CSV HERE 
+library(DataCombine)
+setwd(getwd()) #ADD POKERNOW DIRECTORY HERE
+pokernow <- read.csv("poker_now_log_3YT_eWKribu5znUsVt7_1VWc3.csv") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
 
@@ -62,12 +63,13 @@ for(i in 1:nrow(raw_stacks)){
   return_df <- data.frame(name = name, stack= stack, time = time)
   
   final_df <- rbind(final_df, return_df)
-
+  
 }
 
 
 #Grabbing a player's stack sizes when they quit the game and adding them into the stack dataframe 
 raw_quits <- pokernow[grepleachin(entries, "quits the game"),]
+updates_df <- data.frame(name=character(), value = double(), time =double())
 
 for(i in 1:nrow(raw_quits)){
   temp_quit <- raw_quits[i,]$entry
@@ -77,9 +79,17 @@ for(i in 1:nrow(raw_quits)){
   stack <- as.numeric(substr(temp_val, 1, nchar(temp_val) - 1))
   name <- strsplit(temp_name, "@")[[1]][1]
   time <- ymd_hms(raw_quits$at[i],tz=Sys.timezone())
-  insert_index <- tail(which(final_df$time >= time), n = 1)
-  return_df <- data.frame(name = name, stack= stack, time = time)
-  final_df <- insertRow(final_df, return_df, insert_index)
+  
+  insert_index <- tail(which(final_df$time > time), n = 1)
+  if(length(insert_index) == 0){
+    insert_index = 1
+  }
+  print(i)
+  return_df <- data.frame(name = name, value= stack, time = time)
+  update_df_add <- data.frame(name = name, value = -stack, time = time)
+  updates_df <- rbind(updates_df, update_df_add)
+  final_df <- InsertRow(final_df, NewRow = return_df, RowNum = insert_index)
+  
 }
 
 #Plotting player stack sizes as a function of time  
@@ -99,20 +109,20 @@ for(i in 1: nrow(raw_buyins)){
   temp_buyin_step <-scan(text=temp_buyin, what='\"', quiet=TRUE)
   temp_amount <- temp_buyin_step[12]
   value <- as.numeric(substr(temp_amount, 1, nchar(temp_amount) - 1))
-  if(i == nrow(raw_buyins)){
-   value <- value/100 
+  if(value %% 1000 == 0){
+    value <- value/100 
   }
-  print(value)
   name <- strsplit(temp_buyin_step[6], "@")[[1]][1]
   time <- ymd_hms(raw_buyins$at[i],tz=Sys.timezone())
   return_df <- data.frame(name = name, value= value, time = time)
   buyin_df <- rbind(buyin_df, return_df)
 }
 
+
 #Grabbing stack updates to calculate player nets
 
 raw_updates <- pokernow[grepleachin(entries, "The admin updated"),]
-updates_df <- data.frame(name=character(), value = double(), time =double())
+
 for(i in 1: nrow(raw_updates)){
   temp_update <- raw_updates$entry[i]
   temp_update_step <-scan(text=temp_update, what='\"', quiet=TRUE)
@@ -127,7 +137,7 @@ for(i in 1: nrow(raw_updates)){
   updates_df <- rbind(updates_df, return_df)
 }
 
-
+updates_df <- updates_df[updates_df$value != 0,]
 #Adding buyins and stack updates as factors in net calculation to create a new 
 #Net Column 
 
@@ -136,21 +146,57 @@ net_df$net <- net_df$stack
 for(i in 1:nrow(buyin_df)){
   temp <- buyin_df[i,]
   print(temp)
-  net_df$net <- ifelse(net_df$name == temp$name & net_df$time >= temp$time, net_df$net - temp$value, net_df$net)
+  net_df$net <- ifelse(net_df$name == temp$name & net_df$time > temp$time, net_df$net - temp$value, net_df$net)
 }
 
 for(i in 1:nrow(updates_df)){
   print(i)
   temp <- updates_df[i,]
+  print(temp)
   if(!(is.na(temp[[1]]))){
-  net_df$net <- ifelse(net_df$name == temp$name & net_df$time >= temp$time, net_df$net - temp$value, net_df$net)
+    net_df$net <- ifelse(net_df$name == temp$name & net_df$time > temp$time, net_df$net - temp$value, net_df$net)
   }
 }
 
+# Adding hand_no to net_graph 
+
+hand_start_entries <- rev(which(grepl("starting hand", entries)))
+#rev reverses the order of hands since the first log entry is the last hand  
+
+hand_df <- data.frame(hand_no = double(), time = double())
+for(i in hand_start_entries){
+  split_entry <- strsplit(entries[i], "#")
+  temp_no <-split_entry[[1]][2]
+  second_split <- strsplit(temp_no, "\\(")
+  hand_no <- as.numeric(second_split[[1]][1])
+  time <- ymd_hms(pokernow$at[i],tz=Sys.timezone())
+  new_row <- data.frame(hand_no = hand_no, time = time)
+  hand_df <- rbind(hand_df, new_row)
+}
+last_hand_no <- tail(hand_df, 1)$hand_no + 1 
+last_hand_time <- ymd_hms(pokernow$at[1],tz=Sys.timezone())
+last_hand <- data.frame(hand_no = last_hand_no, time = last_hand_time)
+hand_df <- rbind(hand_df, last_hand)
+
+hand <- c() #creating hand column for net_df
+for(i in c(1:nrow(net_df))){
+  row <- net_df[i,]
+  sub.1 <- hand_df %>% filter(time >= row$time, na.rm=TRUE)
+
+  hand_no <- sub.1[1, "hand_no"]
+  hand <- c(hand, hand_no)
+}
+net_df$hand <- hand
 #Plotting player nets as a function of time 
 
 n <- ggplot(net_df, aes(x=time, y=net)) +
   geom_line(aes(color = name), size = 1) + 
   xlab("time") + 
+  scale_fill_manual(values = wes_palette(21, name = "GrandBudapest1", type = "continuous"), name = "") +
+  theme(axis.text.x=element_text(angle=60, hjust=1)) 
+
+h <- ggplot(net_df, aes(x=hand, y=net)) +
+  geom_line(aes(color = name), size = 1) + 
+  xlab("hand") + 
   scale_fill_manual(values = wes_palette(21, name = "GrandBudapest1", type = "continuous"), name = "") +
   theme(axis.text.x=element_text(angle=60, hjust=1)) 
