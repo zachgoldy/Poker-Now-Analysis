@@ -2,14 +2,14 @@ library(tidyverse)
 library(lubridate)
 library(wesanderson)
 setwd("~/Downloads") #ADD POKERNOW DIRECTORY HERE
-pokernow <- read.csv("poker_now_log_3YT_eWKribu5znUsVt7_1VWc3.csv") #INSERT POKER NOW CSV HERE 
+pokernow <- read.csv("poker_now_log_j2MzecjXNYuyl58PLPO5yhjj7.csv") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
 
 hand_start_entries <- rev(which(grepl("starting hand", entries)))
 #rev reverses hand_entries to parse from start to end 
 hand_df <- data.frame(hand_no = double(), pot_size = double(), 
-                      winner = character(), participants = character())
+                      winner = character(), participants = character(), players = character())
 
 class(hand_df$participants) <- "list"
 for(i in hand_start_entries){
@@ -22,6 +22,22 @@ for(i in hand_start_entries){
     next_index <<- 1
   }
   hand_entries <- entries[i:next_index  + 1]
+  
+  ####Finding available players during a hand for vpip calculation 
+  raw_stacks <- hand_entries[grepleachin(hand_entries, "Player stacks")]
+  temp1 <- scan(text=raw_stacks, what='"', quiet=TRUE)
+  name_range <- seq(4, length(temp1), by = 4)
+  
+  players <- c()
+  for(i in name_range){
+    temp3 <- temp1[i]
+    name_val <- strsplit(temp3, "@")[[1]][[1]]
+    players <- c(players, name_val)
+  }
+  players <- toString(players)
+  ########
+  
+  
   raw_pot_result  <- hand_entries[grepl("collected", hand_entries)]
   temp_step <-  scan(text=raw_pot_result, what='"', quiet=TRUE)
   winner <- strsplit(temp_step[1], "@")[[1]][1]
@@ -40,12 +56,12 @@ for(i in hand_start_entries){
   }
   participants <- toString(unique(participants))
   if(length(temp_participants.2) != 0 ){
-  row <- data.frame(hand_no = hand_no, pot_size = pot_size, 
-                    winner = winner, participants = participants)
+    row <- data.frame(hand_no = hand_no, pot_size = pot_size, 
+                      winner = winner, participants = participants, players = players)
   }
   else{
     row <- data.frame(hand_no = hand_no, pot_size = pot_size, 
-                      winner = winner, participants = NA)
+                      winner = winner, participants = NA, players = players)
   }
   hand_df <- rbind(hand_df, row)
   
@@ -58,9 +74,10 @@ names <- unique(hand_df$winner)
 vpip_df <- data.frame(name = character(), vpip = double())
 for(i in names){
   name <- gsub("[^[:alnum:][:space:]]","",i)
-  hands_played_in <- hand_df[grepl(name, hand_df$participants),]
+  hands_played_in <- hand_df[grepl(name, hand_df$players),]
+  hands_participated_in <- hand_df[grepl(name, hand_df$participants),]
   
-  vpip <- nrow(hands_played_in) / nrow(hand_df) 
+  vpip <- nrow(hands_participated_in) / nrow(hands_played_in) 
   temp_row <- data.frame(name = name, vpip = vpip)
   vpip_df <- rbind (vpip_df, temp_row)
 }

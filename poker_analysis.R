@@ -3,7 +3,7 @@ library(lubridate)
 library(wesanderson)
 library(DataCombine)
 setwd(getwd()) #ADD POKERNOW DIRECTORY HERE
-pokernow <- read.csv("poker_now_log_3YT_eWKribu5znUsVt7_1VWc3.csv") #INSERT POKER NOW CSV HERE 
+pokernow <- read.csv("poker_now_log_j2MzecjXNYuyl58PLPO5yhjj7.cs") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
 
@@ -182,7 +182,7 @@ hand <- c() #creating hand column for net_df
 for(i in c(1:nrow(net_df))){
   row <- net_df[i,]
   sub.1 <- hand_df %>% filter(time >= row$time, na.rm=TRUE)
-
+  
   hand_no <- sub.1[1, "hand_no"]
   hand <- c(hand, hand_no)
 }
