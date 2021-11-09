@@ -2,7 +2,7 @@ library(tidyverse)
 library(lubridate)
 library(wesanderson)
 setwd("~/Downloads") #ADD POKERNOW DIRECTORY HERE
-pokernow <- read.csv("poker_now_log_j2MzecjXNYuyl58PLPO5yhjj7.csv") #INSERT POKER NOW CSV HERE 
+pokernow <- read.csv("poker_now_log_Kvu88erRlSlSL0x09XJsEUr1s.csv") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
 
@@ -21,10 +21,11 @@ grepleachin <- function(x, y){
 
 
 hand_start_entries <- rev(which(grepl("starting hand", entries)))
+
 #rev reverses hand_entries to parse from start to end 
 hand_df <- data.frame(hand_no = double(), pot_size = double(), 
                       winner = character(), winning_hand = character(), 
-                      participants = character(), players = character())
+                      participants = character(), PFAs = character(), players = character())
 
 class(hand_df$participants) <- "list"
 for(i in hand_start_entries){
@@ -40,9 +41,14 @@ for(i in hand_start_entries){
   
   ####Finding available players during a hand for vpip calculation 
   raw_stacks <- hand_entries[grepleachin(hand_entries, "Player stacks")]
+  flop_index <- which(grepleachin(hand_entries, "Flop:"))
+  preflop_entries <- hand_entries
+  postflop_entries <- NA
+  if(length(flop_index) == 1){
+    preflop_entries <- preflop_entries[1:flop_index[1]]
+  }
   temp1 <- scan(text=raw_stacks, what='"', quiet=TRUE)
   name_range <- seq(4, length(temp1), by = 4)
-  
   players <- c()
   for(i in name_range){
     temp3 <- temp1[i]
@@ -64,7 +70,11 @@ for(i in hand_start_entries){
   pot_size <- as.numeric(temp_step[3])
   temp_participants <- hand_entries[grepl("calls|raises", hand_entries)]
   temp_participants.2 <- strsplit(temp_participants, "@")
+  
+  temp_PFAs <- preflop_entries[grepl("raises", preflop_entries)]
+  temp_PFAs <- strsplit(temp_PFAs, "@")
   participants <- c()
+  PFAs <- c()
   
   if(length(temp_participants.2) != 0){
     for(i in c(1: length(temp_participants.2))){
@@ -74,16 +84,27 @@ for(i in hand_start_entries){
       
     }
   }
+    
+    if(length(temp_PFAs) != 0){
+      for(i in c(1: length(temp_PFAs))){
+        temp <- temp_PFAs[[i]][1]
+        temp_PFA <- gsub("[^[:alnum:][:space:]]","",temp)
+        PFAs <- c(PFAs, temp_PFA)
+        
+      }
+  }
   participants <- toString(unique(participants))
-  if(length(temp_participants.2) != 0 ){
-    row <- data.frame(hand_no = hand_no, pot_size = pot_size, 
-                      winner = winner, winning_hand=winning_hand, 
-                      participants = participants, players = players)
+  PFAs <- toString(unique(PFAs))
+  if(length(temp_participants.2) == 0 ){
+    participants <- NA
   }
-  else{
-    row <- data.frame(hand_no = hand_no, pot_size = pot_size, 
-                      winner = winner, winning_hand = winning_hand, participants = NA, players = players)
+  
+  if(length(temp_PFAs) == 0){
+    PFAs <- NA
   }
+    row <- data.frame(hand_no = hand_no, pot_size = pot_size, 
+                      winner = winner, winning_hand = winning_hand, participants = participants, PFAs = PFAs, players = players)
+  
   hand_df <- rbind(hand_df, row)
   
   
@@ -103,12 +124,23 @@ for(i in names){
   vpip_df <- rbind (vpip_df, temp_row)
 }
 
+pfa_df <- data.frame(name = character(), pfa = double())
+for(i in names){
+  name <- gsub("[^[:alnum:][:space:]]","",i)
+  hands_played_in <- hand_df[grepl(name, hand_df$players),]
+  hands_raised_in <- hand_df[grepl(name, hand_df$PFAs),]
+  print(hands_raised_in)
+  PFA <- nrow(hands_raised_in) / nrow(hands_played_in) 
+  temp_row <- data.frame(name = name, PFA = PFA)
+  pfa_df <- rbind (pfa_df, temp_row)
+}
+
 biggest_hands <- hand_df[
   with(hand_df, order(-pot_size)),
 ]
 
 biggest_pots <- "Biggest Hands:\n"
-for(i in c(1,2,3)){
+for(i in c(1,2,3,4,5,6,7)){
 biggest_pots <- paste(biggest_pots, "\nA $", format(biggest_hands[i,2], nsmall=2), " pot was taken down by ", 
                       biggest_hands[i,3], "\nWinning Hand: ", biggest_hands[i,4], 
                       "\nParticipants: ", biggest_hands[i, 5], "\n", sep="")
