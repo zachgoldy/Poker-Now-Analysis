@@ -2,8 +2,8 @@ library(tidyverse)
 library(lubridate)
 library(wesanderson)
 library(DataCombine)
-setwd("~/Downloads") #ADD POKERNOW DIRECTORY HERE
-pokernow <- read.csv("poker_now_log_oX-9L6qQ70vlQE6an4KwpGDCP.csv") #INSERT POKER NOW CSV HERE 
+setwd("C:/users/zgold/Downloads") #ADD POKERNOW DIRECTORY HERE
+pokernow <- read.csv("poker_now_log_akUvUN8Qeo0xG7HWISbof_BHl.csv") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
 # Helper Functions 
@@ -85,6 +85,7 @@ for(i in 1:nrow(raw_quits)){
   }
   print(i)
   return_df <- data.frame(name = name, value= stack, time = time)
+  print(return_df)
   update_df_add <- data.frame(name = name, value = -stack, time = time)
   updates_df <- rbind(updates_df, update_df_add)
   final_df <- InsertRow(final_df, NewRow = return_df, RowNum = insert_index)
@@ -108,7 +109,7 @@ for(i in 1: nrow(raw_buyins)){
   temp_buyin_step <-scan(text=temp_buyin, what='\"', quiet=TRUE)
   temp_amount <- temp_buyin_step[12]
   value <- as.numeric(substr(temp_amount, 1, nchar(temp_amount) - 1))
-  if(value %% 1000 == 0){
+  if(value %% 2000 == 0){
     value <- value/100 
   }
   name <- strsplit(temp_buyin_step[6], "@")[[1]][1]
