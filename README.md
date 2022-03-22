@@ -1,5 +1,5 @@
 # Poker-Now-Analysis
-The website pokernow.club is a fun and user-friendly website that allows friends to poker online together. It has become extremely popular for poker players during the COVID pandemic, including for me and my group of friends. 
+The website pokernow.club is a fun and user-friendly website that allows friends to play poker online together. It has become extremely popular for poker players during the COVID pandemic, including for me and my group of friends. 
 
 During the pandemic, I organized a casual poker game that has started to run around 4-5 times a week. It has become a great way for my friend group to spend time with each other and have some fun together. 
 
