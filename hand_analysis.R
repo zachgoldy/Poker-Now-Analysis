@@ -1,9 +1,9 @@
   library(tidyverse)
   library(lubridate)
   library(wesanderson)
-  #setwd("~/Downloads") #ADD POKERNOW DIRECTORY HERE
-  setwd("C:/users/zgold/Downloads")
-  pokernow <- read.csv("poker_now_log_akUvUN8Qeo0xG7HWISbof_BHl.csv") #INSERT POKER NOW CSV HERE 
+  setwd("~/Downloads") #ADD POKERNOW DIRECTORY HERE
+  #setwd("C:/users/zgold/Downloads")
+  pokernow <- read.csv("poker_now_log_pglMsssWUKTCeHPyJE9kostno.csv") #INSERT POKER NOW CSV HERE 
   entries <- pokernow$entry
   entry_stack <- c()
   
@@ -145,14 +145,14 @@
     vpip_df <- rbind (vpip_df, temp_row)
   }
   
-  pfa_df <- data.frame(name = character(), pfa = double())
+  preflop_df <- data.frame(name = character(), preflop_agression = double())
   for(i in names){
     name <- gsub("[^[:alnum:][:space:]]","",i)
     hands_played_in <- hand_df[grepl(name, hand_df$players),]
     hands_raised_in <- hand_df[grepl(name, hand_df$PFAs),]
     PFA <- nrow(hands_raised_in) / nrow(hands_played_in) 
-    temp_row <- data.frame(name = name, PFA = PFA)
-    pfa_df <- rbind (pfa_df, temp_row)
+    temp_row <- data.frame(name = name, preflop_agression = PFA)
+    preflop_df <- rbind (preflop_df, temp_row)
   }
   
   post_df <- data.frame(name = character(), postflop_agression = double())

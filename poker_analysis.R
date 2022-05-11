@@ -2,8 +2,9 @@ library(tidyverse)
 library(lubridate)
 library(wesanderson)
 library(DataCombine)
-setwd("C:/users/zgold/Downloads") #ADD POKERNOW DIRECTORY HERE
-pokernow <- read.csv("poker_now_log_akUvUN8Qeo0xG7HWISbof_BHl.csv") #INSERT POKER NOW CSV HERE 
+#setwd("C:/users/zgold/Downloads") #ADD POKERNOW DIRECTORY HERE
+setwd("~/Downloads")
+pokernow <- read.csv("poker_now_log_pglUhzoVVOji85IVEunSjbGR3.csv") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
 # Helper Functions 
