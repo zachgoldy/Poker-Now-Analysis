@@ -7,6 +7,6 @@ Recently, I noticed that Poker Now keeps a log of almost anything that happens i
 
 So far, I have found ways to analyze player stacks and player nets as a function of time, and I hope to add more if I come up with more interesting ideas!
 
-#Update: #
+##### Update: 
 
 I've now also added fun ways to display: player vpips, player post and pre flop agression rates, and the biggest pots of the night
