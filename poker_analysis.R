@@ -4,7 +4,7 @@ library(wesanderson)
 library(DataCombine)
 #setwd("C:/users/zgold/Downloads") #ADD POKERNOW DIRECTORY HERE
 setwd("~/Downloads")
-pokernow <- read.csv("poker_now_log_pglUhzoVVOji85IVEunSjbGR3.csv") #INSERT POKER NOW CSV HERE 
+pokernow <- read.csv("poker_now_log_pglc6aa5f3f6PsVJB767-Ap6C.csv") #INSERT POKER NOW CSV HERE 
 entries <- pokernow$entry
 entry_stack <- c()
 # Helper Functions 
@@ -110,7 +110,7 @@ for(i in 1: nrow(raw_buyins)){
   temp_buyin_step <-scan(text=temp_buyin, what='\"', quiet=TRUE)
   temp_amount <- temp_buyin_step[12]
   value <- as.numeric(substr(temp_amount, 1, nchar(temp_amount) - 1))
-  if(value %% 2000 == 0){
+  if(value %% 3000 == 0){
     value <- value/100 
   }
   name <- strsplit(temp_buyin_step[6], "@")[[1]][1]
@@ -134,6 +134,9 @@ for(i in 1: nrow(raw_updates)){
   value <- value2 - value1
   name <- strsplit(temp_update_step[6], "@")[[1]][1]
   time <- ymd_hms(raw_updates$at[i],tz=Sys.timezone())
+  if(length(time) == 0){
+    time <- NA
+  }
   return_df <- data.frame(name = name, value= value, time = time)
   updates_df <- rbind(updates_df, return_df)
 }
