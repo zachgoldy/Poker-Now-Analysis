@@ -6,3 +6,7 @@ During the pandemic, I organized a casual poker game that has started to run aro
 Recently, I noticed that Poker Now keeps a log of almost anything that happens in a game, and provides the option to download a csv file of the log. As an aspiring data scientist, I thought it might be fun to analyze these logs for insights that might be interesting to me and my friends. 
 
 So far, I have found ways to analyze player stacks and player nets as a function of time, and I hope to add more if I come up with more interesting ideas!
+
+#Update: 
+
+I've now also added fun ways to display: player vpips, player post and pre flop agression rates, and the biggest pots of the night
